@@ -1,6 +1,11 @@
 package MessageBoard_OL.DB;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Created by DELL on 14-8-2.
@@ -18,11 +23,71 @@ public class DbHandler {
     }
 
     public void init(){
-        String url="jdbc:postgresql://127.0.0.1:5432/mydb";
-        String name="deepfuture";
-        String password="123123";
+
+//读取sql.cfg文件
+            BufferedReader reader = null;
+        HashMap<String,String> map=new HashMap();
+            try
+            {
+
+                reader = new BufferedReader(new FileReader(System.getProperty("user.dir")+"/src/main/java/MessageBoard_OL/sql.cfg"));
+
+                String line;
+                while ((line = reader.readLine()) != null)
+                {
+                    line = line.trim();
+                    //如果行长度为0或者首字节是#或[
+                    if ((line.length() == 0) || (line.charAt(0) == '#') || (line.charAt(0) == '['))
+                    {
+                        continue;
+                    }
+                    int splitPos = line.indexOf('=');
+                    if (splitPos != -1)
+                    {
+                        //等号前为键 等号后为值
+                        line.substring(0,splitPos);
+                        map.put(line.substring(0, splitPos).toLowerCase(Locale.ENGLISH).trim(),
+                                line.substring(splitPos + 1, line.length()).trim());
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // TODO: handle exception
+            }
+            finally
+            {
+                // 关闭文件句柄
+                try
+                {
+                    if (reader != null)
+                    {
+                        reader.close();
+                    }
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+
+
+
+//        String url="jdbc:postgresql://127.0.0.1:5432/mydb";
+//        String url="jdbc:mysql://SAE_MYSQL_HOST_M:SAE_MYSQL_PORT";
+        String url=map.get("url");
+
+//        String name="deepfuture";
+//        String name="SAE_MYSQL_USER";
+        String name=map.get("username");
+
+//        String password="SAE_MYSQL_PASS";
+//        String password="123123";
+        String password=map.get("password");
+
         try {
-            Class.forName("org.postgresql.Driver");
+//            Class.forName("org.postgresql.Driver");
+            Class.forName(map.get("sqlname"));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -112,6 +177,7 @@ public class DbHandler {
         }
         return  content;
     }
+
 
 
 
